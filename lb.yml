@@ -1,0 +1,17 @@
+- hosts: lb
+  tasks:
+  - name: install haproxy package
+    package:
+      name: "haproxy"
+      state: present
+
+  - name: conf file
+    template:
+      src: "local.cfg.j2"
+      dest: "/etc/haproxy/haproxy.cfg"
+
+  - name: service start
+    service:
+      name: "haproxy"
+      state: restarted
+      enabled: yes

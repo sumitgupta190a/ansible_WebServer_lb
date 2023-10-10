@@ -1,0 +1,139 @@
+************* These are the most of the command in ansible @sumitgupa *******************
+
+yum install ansible-core (To install ansible in redhat)
+
+ansible --version (To check the ansible version)
+
+rpm -q ansible (To check ki ansible installed hai ya nhi)
+
+dnf install dialog (To install dialog)
+
+dnf remove dialog (To remove the dialog)
+
+ansible localhost -m package -a "name=dialog state=present" (-m is stand for module , present means to install the software,  the nameand statekeywordare put inside a double quotes, these are called as attributes(-a)
+)
+
+ansible localhost -m package -a "name=dialog state="absent" (To uninstall the software)
+
+apt-get install ansible (To install the ansible in ubuntu)
+
+dpkg --list dialog (to check dialog install hai ki nhi hai)
+
+ansible all --list-hosts (To list all the inventory)
+
+vi /etc/ansible/hosts (Here we specify the IP address of the managed node)
+
+
+******************** If we want to do ssh in other machine the n follow these steps ***************************
+
+ssh -l root 3.110.177.124 (For ssh to slave node from master node but this command is not work yet)
+
+--- In slave node ---
+passwd root (give the passward)
+
+vi /etc/ssh/sshd_config (Update this file, give the yes permission to "PasswordAuthentication yes" and "PermitRootLogin yes" )
+
+systemctl restart ssh
+
+NOW WE CAN DO SSH FROM MASTER NODE TO SLAVE NODE...
+
+--- In master node ---
+ssh -l root 3.110.177.124 
+***************************************************************************************************************
+
+--- IN MASTER NODE......... we also have to give the inventory[It is just the information of managed node] to connect and install any software with slave node -----
+1.Go to vi /etc/ansible/hosts
+
+2.Add slave node ip, username, password, connection protocol 
+ Example:- 3.110.177.124 ansible_user=root ansible_password=redhat ansible_connection=ssh (This is slave information)
+
+3.ansible 3.110.177.124 -m package -a "name=httpd state=present" (isse httpd hmare slave node me install ho jayega)
+
+Agar hume recheck krna ho ki httpd slave me install hua ki nhi So we can check by this command IN SLAVE NODE
+4. #rpm -q httpd (Run this command to the browsers.)	
+
+--- SAMPLE OF PLAYBOOK FOR THE WEBSERVER Example - myweb.yml ---
+- hosts: all
+  tasks:
+    - package: "name=httpd state=present"
+    - copy   : "src=sumit.html dest=/var/www/html"
+    - service: "name=httpd state=started"
+----------------------------------------------------------------
+
+ansible-playbook myweb.yml (To run the playbook)
+
+ansible-playbook --syntax-check myweb.yml (To check the syntax of the code)
+
+ansible all -m ping (To heck the connectivity of master node and slave node)
+
+ansible-doc module_name (To check the module using commands)
+
+ansible-doc -l (To list all the module)
+
+ansible 3.110.32.53 -m setup (To see all the information of that ip address)
+
+ansible 3.110.32.53 -m setup -a 'filter=ansible_architecture' (To filter the ip address information)
+
+ansible-playbook experiment.yml --extra-vars "dosetup=false" (When we give the extra variable by commands)
+
+ansible 2.110.32.43 -m command -a date (Access server without going inside that server)
+
+
+******************************* MANUAL WAY FOR LOAD BALANCER CONFIGURETION ************************************************
+
+yum install haproxy -y
+
+cd /etc/haproxy
+
+ls
+
+vim haproxy.cfg
+
+----- Inside that file write details ------
+frontend lb
+    bind *:8080
+    timeout client 10s  # Set the client timeout to 10 seconds
+    default_backend myweb
+
+backend myweb
+        balance roundrobin
+        timeout connect 10s
+        timeout server 10s
+        server app1 3.110.177.124:80
+        server app2 13.233.48.25:80
+------------------------------------------
+haproxy -f haproxy.cfg -c
+
+systemctl enable haproxy --now
+************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
